@@ -5,6 +5,8 @@ import Navbar from './components/Navbar'
 import SignUp from './components/SignUp'
 import LogIn from './components/LogIn'
 import MyTrips from './components/MyTrips'
+import AddTrip from './components/AddTrip'
+import ShowTrip from './components/ShowTrip'
 
 export default function App() {
   return <Router>
@@ -14,6 +16,8 @@ export default function App() {
       <Route path='/sign-up' element={<SignUp />} />
       <Route path='/log-in' element={<LogIn />} />
       <Route path='/my-trips' element={<MyTrips />} />
+      <Route path='/add-trip' element={<AddTrip />} />
+      <Route path='/my-trips/:tripId' element={<ShowTrip />} />
     </Routes>
   </Router>
 }

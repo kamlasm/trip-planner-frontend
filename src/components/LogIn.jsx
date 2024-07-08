@@ -28,34 +28,42 @@ export default function LogIn() {
         }
     }
 
-    return <div>
-        <h1>Log In</h1>
-        <form onSubmit={handleSubmit}>
+    return <div className="section">
+        <div className="container">
+            <h1 className="title">Log In</h1>
+            <form onSubmit={handleSubmit} className="box">
 
-            <div>
-                <label>Email</label>
-                <input
-                    type="email"
-                    name={"email"}
-                    onChange={handleChange}
-                    value={formData.email}
-                    placeholder="e.g. name@email.com"
-                />
-            </div>
+                <div className="field">
+                    <label className="label">Email</label>
+                    <div className="control">
+                        <input
+                            className="input"
+                            type="email"
+                            name={"email"}
+                            onChange={handleChange}
+                            value={formData.email}
+                            placeholder="e.g. name@email.com"
+                        />
+                    </div>
+                </div>
 
-            <div>
-                <label>Password</label>
-                <input
-                    type="password"
-                    name={"password"}
-                    onChange={handleChange}
-                    value={formData.password}
-                    placeholder="********"
-                />
-            </div>
+                <div className="field">
+                    <label className="label">Password</label>
+                    <div className="control">
+                        <input
+                            className="input"
+                            type="password"
+                            name={"password"}
+                            onChange={handleChange}
+                            value={formData.password}
+                            placeholder="********"
+                        />
+                    </div>
+                </div>
 
-            <button>Submit</button>
-        </form>
+                <button className="button is-primary">Submit</button>
+            </form>
+        </div>
     </div>
 
 }

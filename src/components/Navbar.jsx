@@ -19,12 +19,21 @@ export default function Navbar() {
         navigate('/')
     }
 
-    return <nav>
-        {isLoggedIn && <p>Hi {getPayload().username}</p>}
-        <Link to="/">Home</Link>
-        {isLoggedIn && <Link to="/my-trips">My Trips</Link>}
-        {!isLoggedIn && <Link to="/sign-up">Sign Up</Link>}
-        {!isLoggedIn && <Link to="/log-in">Log In</Link>}
-        {isLoggedIn && <button onClick={logout}>Log Out</button>}
+    return <nav className="navbar">
+        <div className="navbar-menu is-active">
+            <div className="navbar-end">
+                <div className="navbar-item">
+                    <div className="buttons">
+                        {isLoggedIn && <p>Hi {getPayload().username}</p>}
+                        <Link to="/" className="button is-primary">Home</Link>
+                        {isLoggedIn && <Link to="/my-trips" className="button is-primary">My Trips</Link>}
+                        {isLoggedIn && <Link to="/add-trip" className="button is-primary">Add Trip</Link>}
+                        {!isLoggedIn && <Link to="/sign-up" className="button is-light">Sign Up</Link>}
+                        {!isLoggedIn && <Link to="/log-in" className="button is-light">Log In</Link>}
+                        {isLoggedIn && <button className="button is-light" onClick={logout}>Log Out</button>}
+                    </div>
+                </div>
+            </div>
+        </div>
     </nav>
 }

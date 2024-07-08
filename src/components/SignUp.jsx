@@ -33,77 +33,98 @@ export default function SignUp() {
         }
     }
 
-    return <div>
-        <h1>Sign Up</h1>
-        <form onSubmit={handleSubmit}>
+    return <div className="section">
+        <div className="container">
 
-            <div>
-                <label>First Name</label>
-                <input
-                    type="text"
-                    name={"first_name"}
-                    onChange={handleChange}
-                    value={formData.first_name}
-                    placeholder="First name"
-                />
-            </div>
+            <h1 className="title">Sign Up</h1>
+            <form onSubmit={handleSubmit} className="box">
 
-            <div>
-                <label>Last Name</label>
-                <input
-                    type="text"
-                    name={"last_name"}
-                    onChange={handleChange}
-                    value={formData.last_name}
-                    placeholder="Last name"
-                />
-            </div>
+                <div className="field">
+                    <label className="label">First Name</label>
+                    <div className="control">
+                        <input
+                            className="input"
+                            type="text"
+                            name={"first_name"}
+                            onChange={handleChange}
+                            value={formData.first_name}
+                            placeholder="First name"
+                        />
+                    </div>
+                </div>
 
-            <div>
-                <label>Username</label>
-                <input
-                    type="text"
-                    name={"username"}
-                    onChange={handleChange}
-                    value={formData.username}
-                    placeholder="username"
-                />
-            </div>
+                <div className="field">
+                    <label className="label">Last Name</label>
+                    <div className="control">
+                        <input
+                            className="input"
+                            type="text"
+                            name={"last_name"}
+                            onChange={handleChange}
+                            value={formData.last_name}
+                            placeholder="Last name"
+                        />
+                    </div>
+                </div>
 
-            <div>
-                <label>Email</label>
-                <input
-                    type="email"
-                    name={"email"}
-                    onChange={handleChange}
-                    value={formData.email}
-                    placeholder="e.g. name@email.com"
-                />
-            </div>
+                <div className="field">
+                    <label className="label">Username</label>
+                    <div className="control">
+                        <input
+                            className="input"
+                            type="text"
+                            name={"username"}
+                            onChange={handleChange}
+                            value={formData.username}
+                            placeholder="username"
+                        />
+                    </div>
+                </div>
 
-            <div>
-                <label>Password</label>
-                <input
-                    type="password"
-                    name={"password"}
-                    onChange={handleChange}
-                    value={formData.password}
-                    placeholder="********"
-                />
-            </div>
+                <div className="field">
+                    <label className="label">Email</label>
+                    <div className="control">
+                        <input
+                            className="input"
+                            type="email"
+                            name={"email"}
+                            onChange={handleChange}
+                            value={formData.email}
+                            placeholder="e.g. name@email.com"
+                        />
+                    </div>
+                </div>
 
-            <div>
-                <label>Confirm password</label>
-                <input
-                    type="password"
-                    name={"password_confirmation"}
-                    onChange={handleChange}
-                    value={formData.password_confirmation}
-                    placeholder="********"
-                />
-            </div>
+                <div className="field">
+                    <label className="label">Password</label>
+                    <div className="control">
+                        <input
+                            className="input"
+                            type="password"
+                            name={"password"}
+                            onChange={handleChange}
+                            value={formData.password}
+                            placeholder="********"
+                        />
+                    </div>
+                </div>
 
-            <button>Submit</button>
-        </form>
+                <div className="field">
+                    <label className="label">Confirm password</label>
+                    <div className="control">
+                        <input
+                            className="input"
+                            type="password"
+                            name={"password_confirmation"}
+                            onChange={handleChange}
+                            value={formData.password_confirmation}
+                            placeholder="********"
+                        />
+                    </div>
+                </div>
+
+                <button className="button is-primary">Submit</button>
+            </form>
+        </div>
     </div>
 }
