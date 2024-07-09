@@ -7,11 +7,15 @@ export default function ShowTrip() {
     const navigate = useNavigate()
     const { tripId } = useParams()
     const [trip, setTrip] = useState({})
+    const [costs, setCosts] = useState([])
     const [country, setCountry] = useState('')
     const [FXRate, setFXRate] = useState('')
     const [isEditing, setIsEditing] = useState(false)
-
+    const [isInviting, setIsInviting] = useState(false)
+    const [email, setEmail] = useState('')
     console.log(trip)
+    console.log(costs)
+    console.log(email)
     // const fetchCountry = useCallback(async (country) => {
     //     const resp = await axios.get(`https://restcountries.com/v3.1/name/${country}`)
     //     country = resp.data[0]
@@ -41,8 +45,19 @@ export default function ShowTrip() {
         }
     }
 
+    async function fetchCosts() {
+        try {
+            const token = localStorage.getItem('token')
+            const resp = await axios.get(`http://localhost:8000/api/trips/${tripId}/costs/`, { headers: { Authorization: `Bearer ${token}` } })
+            setCosts(resp.data)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
     useEffect(() => {
         fetchTrip()
+        fetchCosts()
     }, [tripId])
 
     function fixDateTime(data) {
@@ -58,20 +73,16 @@ export default function ShowTrip() {
         setTrip(newTripData)
     }
 
-    function Edit() {
-        setIsEditing(true)
+    function sumCosts() {
+        let total = 0
+        costs.forEach(cost => {
+            total += cost.amount
+        })
+        return total
     }
 
-    async function saveData() {
-        setIsEditing(false)
-        try {
-            const token = localStorage.getItem('token')
-            await axios.put(`http://localhost:8000/api/trips/${tripId}/`, trip, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-        } catch (err) {
-            console.log(err.response.data)
-        }
+    function Edit() {
+        setIsEditing(true)
     }
 
     function handleChange(e) {
@@ -85,11 +96,74 @@ export default function ShowTrip() {
         newTripData[e.target.name][index] = e.target.value
         setTrip(newTripData)
     }
-
+    
     function handleAddButton(e) {
         const newTripData = structuredClone(trip)
         newTripData[e.target.name].push('')
         setTrip(newTripData)
+    }
+
+    function handleRemove(e, index) {
+        const newTripData = structuredClone(trip)
+        newTripData[e.target.name].splice(index, 1)
+        setTrip(newTripData)        
+    }
+
+    async function saveData() {
+        setIsEditing(false)
+        const token = localStorage.getItem('token')
+        try {            
+            await axios.put(`http://localhost:8000/api/trips/${tripId}/`, trip, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+        } catch (err) {
+            console.log(err.response.data)
+        }
+
+        try {
+            await Promise.all(costs.map(cost => {
+                if (!cost.id) {
+                    axios.post(`http://localhost:8000/api/trips/${tripId}/costs/`, cost, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    })
+                } else if (cost.id) {
+                    axios.put(`http://localhost:8000/api/costs/${cost.id}/`, cost, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    })
+                }
+            }))
+        } catch (err) {
+            console.log(err.response.data)
+        }
+    }
+
+    function handleCostChange(e, index) {
+        const newCostData = structuredClone(costs)
+        if (e.target.name === 'amount') {
+            const amountasInt = parseInt(e.target.value)
+            newCostData[index][e.target.name] = amountasInt
+        } else {
+            newCostData[index][e.target.name] = e.target.value 
+        }  
+        setCosts(newCostData)
+    }
+
+    function addCost() {
+        const newCostData = structuredClone(costs)
+        newCostData.push({category: '', amount: 0})
+        setCosts(newCostData)
+    }
+
+    async function removeCost(costId) {
+        try {
+            const token = localStorage.getItem('token')
+            await axios.delete(`http://localhost:8000/api/costs/${costId}/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            fetchCosts()
+        } catch (err) {
+            console.log(err)
+        }     
     }
 
     async function handleDelete() {
@@ -108,50 +182,73 @@ export default function ShowTrip() {
         }
     }
 
+    function handleInviteButton() {
+        setIsInviting(true)
+    }
+
+    function closeInvite() {
+        setIsInviting(false)
+        setEmail('')
+    }
+
+    async function sendInvite() {
+
+    }    
+
     if (!trip.country) {
         return <p>Loading...</p>
     }
-    
+
     return <section className="section">
         <div className="container">
 
             <div className="block hero has-text-centered is-info is-small">
                 <div className="hero-body">
-                {!isEditing && <>
-                <h1 className="title is-2">{trip.name}</h1> 
-                <h1 className="title is-4"> From {formatDateTime(trip.start_date)} to {formatDateTime(trip.end_date)}</h1></>}
+                    {!isEditing && <>
+                        <h1 className="title is-2">{trip.name}</h1>
+                        <h1 className="title is-4"> From {formatDateTime(trip.start_date)} to {formatDateTime(trip.end_date)}</h1></>}
 
-                {isEditing && <> 
-                    <input
-                        className="input title is-2 has-text-centered"
-                        type="text"
-                        name={"name"}
-                        onChange={handleChange}
-                        value={trip.name}
-                    />                  
-                    <h1 className="title is-4">From
-                    <input
-                        className="input date"
-                        type="date"
-                        name={"start_date"}
-                        onChange={handleChange}
-                        value={trip.start_date}
-                    /> to
-                    <input
-                        className="input date"
-                        type="date"
-                        name={"end_date"}
-                        onChange={handleChange}
-                        value={trip.end_date}
-                    />
-                </h1></>}
+                    {isEditing && <>
+                        <input
+                            className="input title is-2 has-text-centered"
+                            type="text"
+                            name={"name"}
+                            onChange={handleChange}
+                            value={trip.name}
+                        />
+                        <h1 className="title is-4">From
+                            <input
+                                className="input date"
+                                type="date"
+                                name={"start_date"}
+                                onChange={handleChange}
+                                value={trip.start_date}
+                            /> to
+                            <input
+                                className="input date"
+                                type="date"
+                                name={"end_date"}
+                                onChange={handleChange}
+                                value={trip.end_date}
+                            />
+                        </h1></>}
+                </div>
             </div>
-            </div>
-            
+
             <div className="buttons is-flex is-justify-content-space-between">
-            {!isEditing ? <button className="button is-warning" onClick={Edit}>Edit Trip Details</button> :
-                <button className="button is-warning" onClick={saveData}>Save Changes</button>}
-                <button className="button is-link">Invite to Trip</button>
+                {!isEditing ? <button className="button is-warning" onClick={Edit}>Edit Trip Details</button> :
+                    <button className="button is-warning" onClick={saveData}>Save Changes</button>}
+                <button className="button is-link" onClick={handleInviteButton}>Invite to Trip</button>
+
+                <div className={!isInviting ? "modal" : "modal is-active"}>
+                    <div className="modal-background"></div>
+                    <div className="modal-content">
+                        <label className="label has-text-link">Who would you like to invite to this trip?</label>
+                        <input className="input" type="email" name="email" placeholder="Enter email address" value={email} onChange={(e) => setEmail(e.target.value)}/>
+                        <button className="button is-link">Send</button>
+                    </div>
+                    <button className="modal-close is-large"  onClick={closeInvite}></button>
+                </div>
             </div>
 
             <div className="columns is-multiline">
@@ -182,21 +279,21 @@ export default function ShowTrip() {
                                 <p>Return: {!isEditing ?
                                     <span>{trip.flight_back_number} {trip.flight_back_time && formatDateTime(trip.flight_back_time)}</span>
                                     : <>
-                                    <input
-                                        className="input"
-                                        type="text"
-                                        name={"flight_back_number"}
-                                        value={trip.flight_back_number}
-                                        onChange={handleChange}
-                                    />
-                                    <input
-                                        className="input"
-                                        type="datetime-local"
-                                        name={"flight_back_time"}
-                                        value={trip.flight_back_time ? trip.flight_back_time : "yyyy-MM-ddThh:mm"}
-                                        onChange={handleChange}
-                                    />
-                                </>}
+                                        <input
+                                            className="input"
+                                            type="text"
+                                            name={"flight_back_number"}
+                                            value={trip.flight_back_number}
+                                            onChange={handleChange}
+                                        />
+                                        <input
+                                            className="input"
+                                            type="datetime-local"
+                                            name={"flight_back_time"}
+                                            value={trip.flight_back_time ? trip.flight_back_time : "yyyy-MM-ddThh:mm"}
+                                            onChange={handleChange}
+                                        />
+                                    </>}
                                 </p>
                             </div>
                         </div>
@@ -209,17 +306,19 @@ export default function ShowTrip() {
                                 {!isEditing && trip.hotels ? trip.hotels.map((hotel, index) => {
                                     return <p key={index}>{hotel}</p>
                                 }) : <>
-                                {trip.hotels.map((hotel, index) => {
-                                    return <input
-                                    key={index}
-                                    className="input"
-                                    type="text"
-                                    name={"hotels"}
-                                    value={hotel}
-                                    onChange={(e) => handleArray(e, index)}
-                                    />                                
-                                })}
-                                <button className="button is-light" name="hotels" onClick={handleAddButton}>Add another</button>
+                                    {trip.hotels.map((hotel, index) => {
+                                        return <div key={index} className="is-flex">
+                                            <input
+                                            className="input"
+                                            type="text"
+                                            name={"hotels"}
+                                            value={hotel}
+                                            onChange={(e) => handleArray(e, index)}
+                                        />
+                                        <button className="button is-danger" name="hotels" onClick={(e) => handleRemove(e, index)}>Remove</button>
+                                        </div>
+                                    })}
+                                    <button className="button is-light" name="hotels" onClick={handleAddButton}>Add another</button>
                                 </>
                                 }
                             </div>
@@ -233,17 +332,19 @@ export default function ShowTrip() {
                                 {!isEditing && trip.activities ? trip.activities.map((activity, index) => {
                                     return <p key={index}>{activity}</p>
                                 }) : <>
-                                {trip.activities.map((activity, index) => {
-                                    return <input
-                                    key={index}
-                                    className="input"
-                                    type="text"
-                                    name={"activities"}
-                                    value={activity}
-                                    onChange={(e) => handleArray(e, index)}
-                                    />                                
-                                })}
-                                <button className="button is-light" name="activities" onClick={handleAddButton}>Add another</button>
+                                    {trip.activities.map((activity, index) => {
+                                        return <div key={index} className="is-flex">
+                                            <input
+                                            className="input"
+                                            type="text"
+                                            name={"activities"}
+                                            value={activity}
+                                            onChange={(e) => handleArray(e, index)}
+                                        />
+                                        <button className="button is-danger" name="activities" onClick={(e) => handleRemove(e, index)}>Remove</button>
+                                        </div>
+                                    })}
+                                    <button className="button is-light" name="activities" onClick={handleAddButton}>Add another</button>
                                 </>
                                 }
                             </div>
@@ -257,13 +358,13 @@ export default function ShowTrip() {
                             <div className="card-content">
                                 <h3 className="title is-4">Itinerary</h3>
                                 {!isEditing ? <p className="itinerary">{trip.itinerary}</p>
-                                : <textarea
-                                    className="textarea"
-                                    type="text"
-                                    name={"itinerary"}
-                                    onChange={handleChange}
-                                    value={trip.itinerary}
-                                ></textarea>}
+                                    : <textarea
+                                        className="textarea"
+                                        type="text"
+                                        name={"itinerary"}
+                                        onChange={handleChange}
+                                        value={trip.itinerary}
+                                    ></textarea>}
                             </div>
                         </div>
                     </div>
@@ -274,9 +375,34 @@ export default function ShowTrip() {
                         <div className="card">
                             <div className="card-content">
                                 <h3 className="title is-4">Budget</h3>
-                                <p>Flights: {trip.flights_cost}</p>
-                                <p>Accommodation: {trip.hotels_cost}</p>
-                                <p>Total: {trip.budget}</p>
+                                {!isEditing ? <>
+                                {costs.map((cost, index) => {
+                                    return <p key={index}>{cost.category}: {cost.amount}</p>})} 
+                                <p>Total: {sumCosts()}</p>
+                                </>
+                                : <>
+                                    {costs.map((cost, index) => {
+                                        return <div key={index} className="is-flex">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name={"category"}
+                                                value={cost.category}
+                                                onChange={(e) => handleCostChange(e, index)}
+                                            />
+                                            <input
+                                                className="input"
+                                                type="number"
+                                                name={"amount"}
+                                                value={cost.amount}
+                                                onChange={(e) => handleCostChange(e, index)}
+                                            />
+                                            <button className="button is-danger" onClick={() => removeCost(cost.id)}>Remove</button>
+                                        </div>
+                                    })}
+                                    <button className="button is-light" name="costs" onClick={addCost} >Add another</button>
+                                </>
+                                }
                             </div>
                         </div>
                     </div>
@@ -313,7 +439,7 @@ export default function ShowTrip() {
                 </div>
             </div>
             <div className="buttons is-centered">
-            <button className="button is-danger" onClick={handleDelete}>Delete Trip</button>
+                <button className="button is-danger" onClick={handleDelete}>Delete Trip</button>
             </div>
         </div>
 
