@@ -23,7 +23,7 @@ export default function MyTrips() {
 
   return <div className="section">
     <div className="container has-text-centered">
-      <h1 className="title">My Trips</h1>
+      <h1 className="title is-1">My Trips</h1>
       <div className="buttons is-centered">
       <Link to="/add-trip" className="button is-warning">Add Trip</Link>
       </div>
