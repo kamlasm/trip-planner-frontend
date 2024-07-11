@@ -10,3 +10,11 @@ input.date {
 .itinerary {
   white-space: pre-wrap;
 }
+
+img {
+  height: 170px;
+}
+
+div.hotel {
+  min-height: 375px;
+}

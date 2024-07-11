@@ -23,10 +23,13 @@ export default function MyTrips() {
 
   return <div className="section">
     <div className="container has-text-centered">
+      
       <h1 className="title is-1">My Trips</h1>
+      
       <div className="buttons is-centered">
       <Link to="/add-trip" className="button is-warning">Add Trip</Link>
       </div>
+
       <div className="container">
         <div className="columns is-multiline is-mobile">
           {trips.map((trip) => {
@@ -41,6 +44,7 @@ export default function MyTrips() {
           })}
         </div>
       </div>
+
     </div>
   </div>
 

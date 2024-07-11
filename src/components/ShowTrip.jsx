@@ -1,40 +1,49 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { formatDateTime } from '../lib/date'
 import { getPayload } from '../lib/auth'
 
 export default function ShowTrip() {
+    const token = localStorage.getItem('token')
     const navigate = useNavigate()
     const { tripId } = useParams()
     const [trip, setTrip] = useState({})
     const [costs, setCosts] = useState([])
     const [country, setCountry] = useState('')
-    const [FXRate, setFXRate] = useState('')
+    const [exchangeRate, setExchangeRate] = useState('')
     const [isEditing, setIsEditing] = useState(false)
     const [isInviting, setIsInviting] = useState(false)
     const [email, setEmail] = useState('')
+    
     console.log(trip)
     console.log(costs)
     console.log(email)
     // const fetchCountry = useCallback(async (country) => {
-    //     const resp = await axios.get(`https://restcountries.com/v3.1/name/${country}`)
-    //     country = resp.data[0]
-    //     setCountry(resp.data[0])
-    //     const currency = Object.keys(country.currencies).map((key) => {
-    //         return key
-    //     })
-    //     fetchFXRate(currency[0])
+    //     try {
+    //         const resp = await axios.get(`http://localhost:8000/third-party-api/countries/${country}`)
+    //         country = resp.data[0]
+    //         setCountry(resp.data[0])
+    //         const currency = Object.keys(country.currencies).map((key) => {
+    //             return key
+    //         })
+    //         fetchExchangeRate(currency[0])
+    //     } catch (err) {
+    //         console.log(err)
+    //     }
     // }, [])
 
-    // async function fetchFXRate(currency) {
-    //     const resp = await axios.get('https://v6.exchangerate-api.com/v6/67ff74912403369ed61c3a89/latest/GBP')
-    //     setFXRate(resp.data.conversion_rates[currency])
+    // async function fetchExchangeRate(currency) {
+    //     try {
+    //         const resp = await axios.get('http://localhost:8000/third-party-api/exchange-rates/')
+    //         setExchangeRate(resp.data.conversion_rates[currency])
+    //     } catch (err) {
+    //         console.log(err)
+    //     }
     // }
 
     async function fetchTrip() {
-        try {
-            const token = localStorage.getItem('token')
+        try {            
             const resp = await axios.get(`http://localhost:8000/api/trips/${tripId}/`, { headers: { Authorization: `Bearer ${token}` } })
             setTrip(resp.data)
             const data = resp.data
@@ -48,7 +57,6 @@ export default function ShowTrip() {
 
     async function fetchCosts() {
         try {
-            const token = localStorage.getItem('token')
             const resp = await axios.get(`http://localhost:8000/api/trips/${tripId}/costs/`, { headers: { Authorization: `Bearer ${token}` } })
             setCosts(resp.data)
         } catch (err) {
@@ -129,7 +137,6 @@ export default function ShowTrip() {
 
     async function handleCostRemove(costId) {
         try {
-            const token = localStorage.getItem('token')
             await axios.delete(`http://localhost:8000/api/costs/${costId}/`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
@@ -141,7 +148,6 @@ export default function ShowTrip() {
 
     async function saveData() {
         setIsEditing(false)
-        const token = localStorage.getItem('token')
         try {
             await axios.put(`http://localhost:8000/api/trips/${tripId}/`, trip, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -169,7 +175,6 @@ export default function ShowTrip() {
 
     async function deleteTrip() {
         try {
-            const token = localStorage.getItem('token')
             await axios.delete(`http://localhost:8000/api/trips/${tripId}/`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
@@ -197,7 +202,6 @@ export default function ShowTrip() {
 
     async function sendInvite() {
         try {
-            const token = localStorage.getItem('token')
             await axios.post(`http://localhost:8000/api/trips/${tripId}/add-user/`, { email: email }, {
                 headers: { Authorization: `Bearer ${token}` }
             })
@@ -210,11 +214,10 @@ export default function ShowTrip() {
     }
 
     function handleLeaveButton() {
-        
+
         async function removeUser() {
             const userId = getPayload().sub
             try {
-                const token = localStorage.getItem('token')
                 await axios.post(`http://localhost:8000/api/trips/${tripId}/remove-user/`, { userId: userId }, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
@@ -235,7 +238,9 @@ export default function ShowTrip() {
     }
 
     if (!trip.country) {
-        return <p>Loading...</p>
+        return <section className="section">
+            <p className="has-text-weight-bold">Loading...</p>
+        </section>
     }
 
     return <section className="section">
@@ -342,8 +347,9 @@ export default function ShowTrip() {
                         <div className="card">
                             <div className="card-content">
                                 <h3 className="title is-4">Accommodation</h3>
+                                {!isEditing &&<Link to={`/my-trips/${trip.id}/hotels`} state={{ country: trip.country }}>Search for hotels</Link>}
                                 {!isEditing && trip.hotels ? trip.hotels.map((hotel, index) => {
-                                    return <p key={index}>{hotel}</p>
+                                    return <Link to={hotel} target="_blank" key={index}><p>{hotel}</p></Link>
                                 }) : <>
                                     {trip.hotels.map((hotel, index) => {
                                         return <div key={index} className="is-flex">
@@ -461,7 +467,7 @@ export default function ShowTrip() {
                                         return <span key={value}>{value.name} - {value.symbol}</span>
                                     })}
                                 </p>
-                                <p>Exchange rate: {FXRate}</p>
+                                <p>Exchange rate: {exchangeRate}</p>
                             </div>
                         </div>
                     </div>

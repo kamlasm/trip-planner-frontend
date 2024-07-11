@@ -7,6 +7,7 @@ import LogIn from './components/LogIn'
 import MyTrips from './components/MyTrips'
 import AddTrip from './components/AddTrip'
 import ShowTrip from './components/ShowTrip'
+import SearchHotels from './components/SearchHotels'
 
 export default function App() {
   return <Router>
@@ -18,6 +19,7 @@ export default function App() {
       <Route path='/my-trips' element={<MyTrips />} />
       <Route path='/add-trip' element={<AddTrip />} />
       <Route path='/my-trips/:tripId' element={<ShowTrip />} />
+      <Route path='/my-trips/:tripId/hotels' element={<SearchHotels />} />
     </Routes>
   </Router>
 }

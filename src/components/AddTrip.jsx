@@ -18,18 +18,22 @@ export default function AddTrip() {
     })
 
     async function fetchCountries() {
-        const resp = await axios.get('https://restcountries.com/v3.1/all')
-        const countries = resp.data
-        countries.sort((a, b) => {
-            if (a.name.common < b.name.common) {
-                return -1
-            }
-            if (a.name.common > b.name.common) {
-                return 1
-            }
-            return 0
-        })
-        setCountries(countries)
+        try {
+            const resp = await axios.get('http://localhost:8000/third-party-api/countries/')
+            const countries = resp.data
+            countries.sort((a, b) => {
+                if (a.name.common < b.name.common) {
+                    return -1
+                }
+                if (a.name.common > b.name.common) {
+                    return 1
+                }
+                return 0
+            })
+            setCountries(countries)
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     useEffect(() => {
