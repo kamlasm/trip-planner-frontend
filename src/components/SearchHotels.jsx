@@ -11,13 +11,13 @@ export default function SearchHotels() {
         images: "https://img-cdn.pixlr.com/image-generator/history/65bb506dcb310754719cf81f/ede935de-1138-4f66-8ed7-44bd16efc709/medium.webp",
         city: {content: "City"},
         postalCode: "postal code",
-        web: "link",
+        web: "www.somelink.com",
         description: {content: "some desc about the hotel"}},
         {name: {content: "Hotel Name that is longer than Hotel 1 name"}, 
-        images: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ718nztPNJfCbDJjZG8fOkejBnBAeQw5eAUA&s",
+        images: '',
         city: {content: "City"},
         postalCode: "postal code",
-        web: "link",
+        web: "https://www.somelink.com",
         description: {content: "some desc about the hotel"}}
     ])
     const [params, setParams] = useState({
@@ -26,7 +26,7 @@ export default function SearchHotels() {
     })
     const [showDesc, setShowDesc] = useState(false)
 
-    console.log(params)
+    console.log(hotels)
 
     function handleChange(e) {
         const newParams = structuredClone(params)
@@ -49,6 +49,14 @@ export default function SearchHotels() {
             setShowDesc(false)
         } else {
             setShowDesc(true)
+        }
+    }
+
+    function checkWebLink(hotelWeb) {
+        if (hotelWeb.startsWith('http')) {
+            return hotelWeb
+        } else {
+            return `http://${hotelWeb}`
         }
     }
 
@@ -94,12 +102,12 @@ export default function SearchHotels() {
                                 <p className="subtitle">{hotel.city.content}, {hotel.postalCode}</p>
                                 <figure>
                                 <img 
-                                // src={`http://photos.hotelbeds.com/giata/${hotel.images[0].path}`}
-                                src={hotel.images} alt={hotel.name.content} />
+                                src={hotel.images && `http://photos.hotelbeds.com/giata/${hotel.images[0].path}`}
+                                alt={hotel.name.content} />
                                 </figure>
                                 <button onClick={handleDescBtn} className="has-text-primary">{!showDesc ? "Show description" : "Hide description"}</button>
                                 <p className="is-size-7">{showDesc && hotel.description.content}</p>
-                                <Link to={`https://${hotel.web}`} target="_blank" className="button is-small is-link mt-1">Website</Link>
+                                {hotel.web && <Link to={checkWebLink(hotel.web)} target="_blank" className="button is-small is-link mt-1">Website</Link>}
                             </div>
                         </div>
                     </div>

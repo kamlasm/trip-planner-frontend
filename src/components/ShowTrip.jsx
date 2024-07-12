@@ -10,15 +10,16 @@ export default function ShowTrip() {
     const { tripId } = useParams()
     const [trip, setTrip] = useState({})
     const [costs, setCosts] = useState([])
+    const [hotels, setHotels] = useState([])
     const [country, setCountry] = useState('')
     const [exchangeRate, setExchangeRate] = useState('')
     const [isEditing, setIsEditing] = useState(false)
     const [isInviting, setIsInviting] = useState(false)
     const [email, setEmail] = useState('')
-    
+
     console.log(trip)
     console.log(costs)
-    console.log(email)
+    console.log(hotels)
     // const fetchCountry = useCallback(async (country) => {
     //     try {
     //         const resp = await axios.get(`http://localhost:8000/third-party-api/countries/${country}`)
@@ -43,7 +44,7 @@ export default function ShowTrip() {
     // }
 
     async function fetchTrip() {
-        try {            
+        try {
             const resp = await axios.get(`http://localhost:8000/api/trips/${tripId}/`, { headers: { Authorization: `Bearer ${token}` } })
             setTrip(resp.data)
             const data = resp.data
@@ -64,9 +65,19 @@ export default function ShowTrip() {
         }
     }
 
+    async function fetchHotels() {
+        try {
+            const resp = await axios.get(`http://localhost:8000/api/trips/${tripId}/hotels/`, { headers: { Authorization: `Bearer ${token}` } })
+            setHotels(resp.data)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
     useEffect(() => {
         fetchTrip()
         fetchCosts()
+        fetchHotels()
     }, [tripId])
 
     function fixDateTime(data) {
@@ -145,6 +156,28 @@ export default function ShowTrip() {
             console.log(err)
         }
     }
+    function handleHotelInput(e, index) {
+        const newHotelData = structuredClone(hotels)
+        newHotelData[index][e.target.name] = e.target.value
+        setHotels(newHotelData)
+    }
+
+    function handleHotelAdd() {
+        const newHotelData = structuredClone(hotels)
+        newHotelData.push({ name: '', link: '' })
+        setHotels(newHotelData)
+    }
+
+    async function handleHotelRemove(hotelId) {
+        try {
+            await axios.delete(`http://localhost:8000/api/hotels/${hotelId}/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            fetchHotels()
+        } catch (err) {
+            console.log(err)
+        }
+    }
 
     async function saveData() {
         setIsEditing(false)
@@ -160,12 +193,21 @@ export default function ShowTrip() {
             await Promise.all(costs.map(cost => {
                 if (!cost.id) {
                     axios.post(`http://localhost:8000/api/trips/${tripId}/costs/`, cost, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    })
+                        headers: { Authorization: `Bearer ${token}` }})
                 } else if (cost.id) {
                     axios.put(`http://localhost:8000/api/costs/${cost.id}/`, cost, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    })
+                        headers: { Authorization: `Bearer ${token}` }})
+                }
+            }))
+        } catch (err) {
+            console.log(err.response.data)
+        }
+        try {
+            await Promise.all(hotels.map(hotel => {
+                if (!hotel.id) {
+                    axios.post(`http://localhost:8000/api/trips/${tripId}/hotels/`, hotel, { headers: { Authorization: `Bearer ${token}` }})
+                } else if (hotel.id) {
+                    axios.put(`http://localhost:8000/api/hotels/${hotel.id}/`, hotel, { headers: { Authorization: `Bearer ${token}` }})
                 }
             }))
         } catch (err) {
@@ -347,23 +389,35 @@ export default function ShowTrip() {
                         <div className="card">
                             <div className="card-content">
                                 <h3 className="title is-4">Accommodation</h3>
-                                {!isEditing &&<Link to={`/my-trips/${trip.id}/hotels`} state={{ country: trip.country }}>Search for hotels</Link>}
-                                {!isEditing && trip.hotels ? trip.hotels.map((hotel, index) => {
-                                    return <Link to={hotel} target="_blank" key={index}><p>{hotel}</p></Link>
-                                }) : <>
-                                    {trip.hotels.map((hotel, index) => {
-                                        return <div key={index} className="is-flex">
-                                            <input
-                                                className="input"
-                                                type="text"
-                                                name={"hotels"}
-                                                value={hotel}
-                                                onChange={(e) => handleTripArrayInput(e, index)}
-                                            />
-                                            <button className="button is-danger" name="hotels" onClick={(e) => handleTripRemove(e, index)}>Remove</button>
-                                        </div>
-                                    })}
-                                    <button className="button is-light" name="hotels" onClick={handleTripAdd}>Add another</button>
+                                {!isEditing ? <div>
+                                <Link to={`/my-trips/${trip.id}/hotels`} state={{ country: trip.country }}>Search for hotels</Link>                               
+                                {hotels.map((hotel, index) => {
+                                    return <p key={index}>{hotel.link ? <Link to={hotel.link} target="_blank" key={index}>{hotel.name}</Link> : hotel.name}</p>
+                                })}
+                                </div>
+                                : <>                                        
+                                {hotels.map((hotel, index) => {
+                                    return <div key={index}>
+                                        <input
+                                            className="input"
+                                            type="text"
+                                            name={"name"}
+                                            value={hotel.name}
+                                            onChange={(e) => handleHotelInput(e, index)}
+                                            placeholder="hotel name"
+                                        />
+                                        <input
+                                            className="input"
+                                            type="text"
+                                            name={"link"}
+                                            value={hotel.link}
+                                            onChange={(e) => handleHotelInput(e, index)}
+                                            placeholder="hotel link"
+                                        />
+                                        <button className="button is-danger" onClick={() => handleHotelRemove(hotel.id)}>Remove</button>
+                                    </div>
+                                })}
+                                    <button className="button is-light" name="costs" onClick={handleHotelAdd} >Add</button>
                                 </>
                                 }
                             </div>
@@ -389,7 +443,7 @@ export default function ShowTrip() {
                                             <button className="button is-danger" name="activities" onClick={(e) => handleTripRemove(e, index)}>Remove</button>
                                         </div>
                                     })}
-                                    <button className="button is-light" name="activities" onClick={handleTripAdd}>Add another</button>
+                                    <button className="button is-light" name="activities" onClick={handleTripAdd}>Add</button>
                                 </>
                                 }
                             </div>
@@ -435,6 +489,7 @@ export default function ShowTrip() {
                                                     name={"category"}
                                                     value={cost.category}
                                                     onChange={(e) => handleCostInput(e, index)}
+                                                    placeholder="category"
                                                 />
                                                 <input
                                                     className="input"
@@ -446,7 +501,7 @@ export default function ShowTrip() {
                                                 <button className="button is-danger" onClick={() => handleCostRemove(cost.id)}>Remove</button>
                                             </div>
                                         })}
-                                        <button className="button is-light" name="costs" onClick={handleCostAdd} >Add another</button>
+                                        <button className="button is-light" name="costs" onClick={handleCostAdd}>Add</button>
                                     </>
                                 }
                             </div>
