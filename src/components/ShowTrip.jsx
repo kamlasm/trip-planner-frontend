@@ -343,7 +343,8 @@ export default function ShowTrip() {
                         <div className="card">
                             <div className="card-content">
                                 <h3 className="title is-4">Flights</h3>
-                                <p>Outbound: {!isEditing ?
+                                {!isEditing && <Link to={`/my-trips/${trip.id}/flights`}>Search for flights</Link>}   
+                                <p>Outbound: {!isEditing ? 
                                     <span> {trip.flight_out_number} {trip.flight_out_time && formatDateTime(trip.flight_out_time)}</span>
                                     : <>
                                         <input
@@ -352,6 +353,7 @@ export default function ShowTrip() {
                                             name={"flight_out_number"}
                                             value={trip.flight_out_number}
                                             onChange={handleTripInput}
+                                            placeholder='Airline, flight number'
                                         />
                                         <input
                                             className="input"
@@ -371,6 +373,7 @@ export default function ShowTrip() {
                                             name={"flight_back_number"}
                                             value={trip.flight_back_number}
                                             onChange={handleTripInput}
+                                            placeholder='Airline, flight number'
                                         />
                                         <input
                                             className="input"
