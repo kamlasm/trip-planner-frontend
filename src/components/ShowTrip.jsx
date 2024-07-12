@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { formatDateTime } from '../lib/date'
 import { getPayload } from '../lib/auth'
+import { baseUrl } from '../config'
 
 export default function ShowTrip() {
     const token = localStorage.getItem('token')
@@ -22,7 +23,7 @@ export default function ShowTrip() {
     console.log(hotels)
     // const fetchCountry = useCallback(async (country) => {
     //     try {
-    //         const resp = await axios.get(`http://localhost:8000/third-party-api/countries/${country}`)
+    //         const resp = await axios.get(`${baseUrl}/third-party-api/countries/${country}`)
     //         country = resp.data[0]
     //         setCountry(resp.data[0])
     //         const currency = Object.keys(country.currencies).map((key) => {
@@ -36,7 +37,7 @@ export default function ShowTrip() {
 
     // async function fetchExchangeRate(currency) {
     //     try {
-    //         const resp = await axios.get('http://localhost:8000/third-party-api/exchange-rates/')
+    //         const resp = await axios.get(`${baseUrl}/third-party-api/exchange-rates/`)
     //         setExchangeRate(resp.data.conversion_rates[currency])
     //     } catch (err) {
     //         console.log(err)
@@ -45,7 +46,7 @@ export default function ShowTrip() {
 
     async function fetchTrip() {
         try {
-            const resp = await axios.get(`http://localhost:8000/api/trips/${tripId}/`, { headers: { Authorization: `Bearer ${token}` } })
+            const resp = await axios.get(`${baseUrl}/api/trips/${tripId}/`, { headers: { Authorization: `Bearer ${token}` } })
             setTrip(resp.data)
             const data = resp.data
             fixDateTime(data)
@@ -58,7 +59,7 @@ export default function ShowTrip() {
 
     async function fetchCosts() {
         try {
-            const resp = await axios.get(`http://localhost:8000/api/trips/${tripId}/costs/`, { headers: { Authorization: `Bearer ${token}` } })
+            const resp = await axios.get(`${baseUrl}/api/trips/${tripId}/costs/`, { headers: { Authorization: `Bearer ${token}` } })
             setCosts(resp.data)
         } catch (err) {
             console.log(err)
@@ -67,7 +68,7 @@ export default function ShowTrip() {
 
     async function fetchHotels() {
         try {
-            const resp = await axios.get(`http://localhost:8000/api/trips/${tripId}/hotels/`, { headers: { Authorization: `Bearer ${token}` } })
+            const resp = await axios.get(`${baseUrl}/api/trips/${tripId}/hotels/`, { headers: { Authorization: `Bearer ${token}` } })
             setHotels(resp.data)
         } catch (err) {
             console.log(err)

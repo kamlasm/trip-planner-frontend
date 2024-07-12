@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import axios from 'axios'
+import { baseUrl } from '../config'
 
 export default function SearchHotels() {
     const { tripId } = useParams()
@@ -37,7 +38,7 @@ export default function SearchHotels() {
     async function handleSubmit(e) {
         e.preventDefault()
         try {
-            const resp = await axios.post('http://localhost:8000/third-party-api/hotels/', params)
+            const resp = await axios.post(`${baseUrl}/third-party-api/hotels/`, params)
             setHotels(resp.data.hotels)
         } catch (err) {
             console.log(err)

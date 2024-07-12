@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { baseUrl } from '../config'
 
 export default function AddTrip() {
 
@@ -19,7 +20,7 @@ export default function AddTrip() {
 
     async function fetchCountries() {
         try {
-            const resp = await axios.get('http://localhost:8000/third-party-api/countries/')
+            const resp = await axios.get(`${baseUrl}/third-party-api/countries/`)
             const countries = resp.data
             countries.sort((a, b) => {
                 if (a.name.common < b.name.common) {
@@ -50,7 +51,7 @@ export default function AddTrip() {
         e.preventDefault()
         try {
             const token = localStorage.getItem('token')
-            const newTrip = await axios.post('http://localhost:8000/api/trips/', formData, {
+            const newTrip = await axios.post(`${baseUrl}/api/trips/`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             navigate(`/my-trips/${newTrip.data.id}`)

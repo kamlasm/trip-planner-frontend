@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { formatDateTime } from '../lib/date'
+import { baseUrl } from '../config'
 
 export default function SearchFlights() {
     const { tripId } = useParams()
@@ -29,7 +30,7 @@ export default function SearchFlights() {
     async function handleSubmit(e) {
         e.preventDefault()
         try {
-            const resp = await axios.post('http://localhost:8000/third-party-api/flights/', params)
+            const resp = await axios.post(`${baseUrl}/third-party-api/flights/`, params)
             setFlights(resp.data.data)
             setAirlines(resp.data.dictionaries.carriers)
         } catch (err) {

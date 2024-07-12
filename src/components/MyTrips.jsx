@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { formatDateTime } from '../lib/date'
+import { baseUrl } from '../config'
 
 export default function MyTrips() {
 
@@ -10,7 +11,7 @@ export default function MyTrips() {
   async function fetchTrips() {
     try {
       const token = localStorage.getItem('token')
-      const resp = await axios.get('http://localhost:8000/api/trips/', { headers: { Authorization: `Bearer ${token}` } })
+      const resp = await axios.get(`${baseUrl}/api/trips/`, { headers: { Authorization: `Bearer ${token}` } })
       setTrips(resp.data)
     } catch (err) {
       console.log(err.response.data)
