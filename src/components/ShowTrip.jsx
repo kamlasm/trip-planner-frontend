@@ -149,7 +149,7 @@ export default function ShowTrip() {
 
     async function handleCostRemove(costId) {
         try {
-            await axios.delete(`http://localhost:8000/api/costs/${costId}/`, {
+            await axios.delete(`${baseUrl}/api/costs/${costId}/`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             fetchCosts()
@@ -171,7 +171,7 @@ export default function ShowTrip() {
 
     async function handleHotelRemove(hotelId) {
         try {
-            await axios.delete(`http://localhost:8000/api/hotels/${hotelId}/`, {
+            await axios.delete(`${baseUrl}/api/hotels/${hotelId}/`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             fetchHotels()
@@ -183,7 +183,7 @@ export default function ShowTrip() {
     async function saveData() {
         setIsEditing(false)
         try {
-            await axios.put(`http://localhost:8000/api/trips/${tripId}/`, trip, {
+            await axios.put(`${baseUrl}/api/trips/${tripId}/`, trip, {
                 headers: { Authorization: `Bearer ${token}` }
             })
         } catch (err) {
@@ -193,10 +193,10 @@ export default function ShowTrip() {
         try {
             await Promise.all(costs.map(cost => {
                 if (!cost.id) {
-                    axios.post(`http://localhost:8000/api/trips/${tripId}/costs/`, cost, {
+                    axios.post(`${baseUrl}/api/trips/${tripId}/costs/`, cost, {
                         headers: { Authorization: `Bearer ${token}` }})
                 } else if (cost.id) {
-                    axios.put(`http://localhost:8000/api/costs/${cost.id}/`, cost, {
+                    axios.put(`${baseUrl}/api/costs/${cost.id}/`, cost, {
                         headers: { Authorization: `Bearer ${token}` }})
                 }
             }))
@@ -206,9 +206,9 @@ export default function ShowTrip() {
         try {
             await Promise.all(hotels.map(hotel => {
                 if (!hotel.id) {
-                    axios.post(`http://localhost:8000/api/trips/${tripId}/hotels/`, hotel, { headers: { Authorization: `Bearer ${token}` }})
+                    axios.post(`${baseUrl}/api/trips/${tripId}/hotels/`, hotel, { headers: { Authorization: `Bearer ${token}` }})
                 } else if (hotel.id) {
-                    axios.put(`http://localhost:8000/api/hotels/${hotel.id}/`, hotel, { headers: { Authorization: `Bearer ${token}` }})
+                    axios.put(`${baseUrl}/api/hotels/${hotel.id}/`, hotel, { headers: { Authorization: `Bearer ${token}` }})
                 }
             }))
         } catch (err) {
@@ -218,7 +218,7 @@ export default function ShowTrip() {
 
     async function deleteTrip() {
         try {
-            await axios.delete(`http://localhost:8000/api/trips/${tripId}/`, {
+            await axios.delete(`${baseUrl}/api/trips/${tripId}/`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             navigate('/my-trips')
@@ -245,7 +245,7 @@ export default function ShowTrip() {
 
     async function sendInvite() {
         try {
-            await axios.post(`http://localhost:8000/api/trips/${tripId}/add-user/`, { email: email }, {
+            await axios.post(`${baseUrl}/api/trips/${tripId}/add-user/`, { email: email }, {
                 headers: { Authorization: `Bearer ${token}` }
             })
         } catch (err) {
@@ -261,7 +261,7 @@ export default function ShowTrip() {
         async function removeUser() {
             const userId = getPayload().sub
             try {
-                await axios.post(`http://localhost:8000/api/trips/${tripId}/remove-user/`, { userId: userId }, {
+                await axios.post(`${baseUrl}/api/trips/${tripId}/remove-user/`, { userId: userId }, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                 navigate('/my-trips')
