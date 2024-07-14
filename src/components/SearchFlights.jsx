@@ -51,7 +51,7 @@ export default function SearchFlights() {
                 <div className="field">
                     <label className="label">Origin city/airport</label>
                     <input
-                        className="input"
+                        className="input is-primary"
                         type="text"
                         name={"originCity"}
                         onChange={handleChange}
@@ -62,7 +62,7 @@ export default function SearchFlights() {
                 <div className="field">
                     <label className="label">Destination city/airport</label>
                     <input
-                        className="input"
+                        className="input is-primary"
                         type="text"
                         name={"destinationCity"}
                         onChange={handleChange}
@@ -73,7 +73,7 @@ export default function SearchFlights() {
                 <div className="field">
                     <label className="label">Departure date</label>
                     <input
-                        className="input"
+                        className="input date is-primary"
                         type="date"
                         name={"departureDate"}
                         onChange={handleChange}
@@ -84,7 +84,7 @@ export default function SearchFlights() {
                 <div className="field">
                     <label className="label">Return date</label>
                     <input
-                        className="input"
+                        className="input date is-primary"
                         type="date"
                         name={"returnDate"}
                         onChange={handleChange}
@@ -95,7 +95,7 @@ export default function SearchFlights() {
                 <div className="field">
                     <label className="label">Travellers</label>
                     <input
-                        className="input"
+                        className="input date is-primary"
                         type="number"
                         name={"adults"}
                         onChange={handleChange}

@@ -1,6 +1,5 @@
 input.date {
   width: auto;
-  margin: 0 10px;
 }
 
 .textarea {
@@ -11,10 +10,52 @@ input.date {
   white-space: pre-wrap;
 }
 
-img {
+.hotel-img {
   height: 170px;
 }
 
 div.hotel {
   min-height: 375px;
+}
+
+.navbar-burger {
+  flex-direction: row;
+  width: unset;
+}
+
+@media screen and (min-width: 660px) {
+  .navbar, .navbar-end, .navbar-menu, .navbar-brand {
+      align-items: stretch;
+      display: flex;
+  }
+  .navbar-end {
+      justify-content: flex-end;
+      margin-inline-start: auto;
+  }
+  .navbar-menu {
+      flex-grow: 1;
+      flex-shrink: 0;
+  }
+  .navbar-burger {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 1023px) {
+  .navbar-menu.is-active {
+      display: flex;
+  }
+  .navbar-menu {
+      padding: 0;
+  }
+}
+
+@media screen and (max-width: 660px) {
+  .navbar-menu.is-active {
+      display: block;
+  }
+  .navbar-item > div.buttons {
+    flex-direction: column;
+    
+  }
 }

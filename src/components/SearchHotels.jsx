@@ -26,6 +26,7 @@ export default function SearchHotels() {
         country: country,
     })
     const [showDesc, setShowDesc] = useState(false)
+    const [error, setError] = useState({})
 
     console.log(hotels)
 
@@ -40,8 +41,9 @@ export default function SearchHotels() {
         try {
             const resp = await axios.post(`${baseUrl}/third-party-api/hotels/`, params)
             setHotels(resp.data.hotels)
+            setError({})
         } catch (err) {
-            console.log(err)
+            setError(err.response.data)
         }
     }
 
@@ -65,12 +67,18 @@ export default function SearchHotels() {
 
         <div className="container">
             <h1 className="title">Search Hotels</h1>
+            <div className="has-text-danger mb-3">
+                {Object.entries(error).map(([key, value]) => {
+                return <p key={key}>{key} - {value}</p>
+            })}
+            </div>
+
             <form onSubmit={handleSubmit} className="box">
 
                 <div className="field">
                     <label className="label">City</label>
                     <input
-                        className="input"
+                        className="input is-primary"
                         type="text"
                         name={"city"}
                         onChange={handleChange}
@@ -81,7 +89,7 @@ export default function SearchHotels() {
                 <div className="field">
                     <label className="label">Country</label>
                     <input
-                        className="input"
+                        className="input is-primary"
                         type="text"
                         name={"country"}
                         value={params.country}
@@ -103,6 +111,7 @@ export default function SearchHotels() {
                                 <p className="subtitle">{hotel.city.content}, {hotel.postalCode}</p>
                                 <figure>
                                 <img 
+                                className="hotel-img"
                                 src={hotel.images && `http://photos.hotelbeds.com/giata/${hotel.images[0].path}`}
                                 alt={hotel.name.content} />
                                 </figure>

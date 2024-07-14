@@ -10,6 +10,7 @@ export default function LogIn() {
         email: '',
         password: '',
     })
+    const [error, setError] = useState({})
 
     function handleChange(e) {
         const newFormData = structuredClone(formData)
@@ -25,25 +26,30 @@ export default function LogIn() {
             localStorage.setItem('token', token)
             navigate('/my-trips')
         } catch (err) {
-            console.log(err)
+            setError(err.response.data)
         }
     }
 
     return <div className="section">
         <div className="container">
             <h1 className="title">Log In</h1>
+            <div className="has-text-danger mb-3">
+                {error.detail}
+            </div>
+
             <form onSubmit={handleSubmit} className="box">
 
                 <div className="field">
                     <label className="label">Email</label>
                     <div className="control">
                         <input
-                            className="input"
+                            className="input is-primary"
                             type="email"
                             name={"email"}
                             onChange={handleChange}
                             value={formData.email}
-                            placeholder="e.g. name@email.com"
+                            placeholder="name@email.com"
+                            required
                         />
                     </div>
                 </div>
@@ -52,12 +58,13 @@ export default function LogIn() {
                     <label className="label">Password</label>
                     <div className="control">
                         <input
-                            className="input"
+                            className="input is-primary"
                             type="password"
                             name={"password"}
                             onChange={handleChange}
                             value={formData.password}
                             placeholder="********"
+                            required
                         />
                     </div>
                 </div>

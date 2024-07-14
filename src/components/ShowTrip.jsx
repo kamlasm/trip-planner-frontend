@@ -4,11 +4,13 @@ import axios from 'axios'
 import { formatDateTime } from '../lib/date'
 import { getPayload } from '../lib/auth'
 import { baseUrl } from '../config'
+import Modal from './Modal'
 
 export default function ShowTrip() {
     const token = localStorage.getItem('token')
     const navigate = useNavigate()
     const { tripId } = useParams()
+
     const [trip, setTrip] = useState({})
     const [costs, setCosts] = useState([])
     const [hotels, setHotels] = useState([])
@@ -17,10 +19,10 @@ export default function ShowTrip() {
     const [isEditing, setIsEditing] = useState(false)
     const [isInviting, setIsInviting] = useState(false)
     const [email, setEmail] = useState('')
+    const [error, setError] = useState({})
+    const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
-    console.log(trip)
-    console.log(costs)
-    console.log(hotels)
     // const fetchCountry = useCallback(async (country) => {
     //     try {
     //         const resp = await axios.get(`${baseUrl}/third-party-api/countries/${country}`)
@@ -31,7 +33,7 @@ export default function ShowTrip() {
     //         })
     //         fetchExchangeRate(currency[0])
     //     } catch (err) {
-    //         console.log(err)
+    //         setError(err.response.data)
     //     }
     // }, [])
 
@@ -40,7 +42,7 @@ export default function ShowTrip() {
     //         const resp = await axios.get(`${baseUrl}/third-party-api/exchange-rates/`)
     //         setExchangeRate(resp.data.conversion_rates[currency])
     //     } catch (err) {
-    //         console.log(err)
+    //         setError(err.response.data)
     //     }
     // }
 
@@ -49,11 +51,13 @@ export default function ShowTrip() {
             const resp = await axios.get(`${baseUrl}/api/trips/${tripId}/`, { headers: { Authorization: `Bearer ${token}` } })
             setTrip(resp.data)
             const data = resp.data
-            fixDateTime(data)
-            // const country = resp.data.country
-            // fetchCountry(country)
+            if (data.name) {
+                fixDateTime(data)
+                // const country = resp.data.country
+                // fetchCountry(country)
+            }
         } catch (err) {
-            console.log(err)
+            setError(err.response.data)
         }
     }
 
@@ -62,7 +66,7 @@ export default function ShowTrip() {
             const resp = await axios.get(`${baseUrl}/api/trips/${tripId}/costs/`, { headers: { Authorization: `Bearer ${token}` } })
             setCosts(resp.data)
         } catch (err) {
-            console.log(err)
+            setError(err.response.data)
         }
     }
 
@@ -71,7 +75,7 @@ export default function ShowTrip() {
             const resp = await axios.get(`${baseUrl}/api/trips/${tripId}/hotels/`, { headers: { Authorization: `Bearer ${token}` } })
             setHotels(resp.data)
         } catch (err) {
-            console.log(err)
+            setError(err.response.data)
         }
     }
 
@@ -154,7 +158,7 @@ export default function ShowTrip() {
             })
             fetchCosts()
         } catch (err) {
-            console.log(err)
+            setError(err.response.data)
         }
     }
     function handleHotelInput(e, index) {
@@ -176,61 +180,41 @@ export default function ShowTrip() {
             })
             fetchHotels()
         } catch (err) {
-            console.log(err)
+            setError(err.response.data)
         }
     }
 
     async function saveData() {
-        setIsEditing(false)
         try {
             await axios.put(`${baseUrl}/api/trips/${tripId}/`, trip, {
                 headers: { Authorization: `Bearer ${token}` }
             })
-        } catch (err) {
-            console.log(err.response.data)
-        }
 
-        try {
             await Promise.all(costs.map(cost => {
                 if (!cost.id) {
-                    axios.post(`${baseUrl}/api/trips/${tripId}/costs/`, cost, {
-                        headers: { Authorization: `Bearer ${token}` }})
+                    return axios.post(`${baseUrl}/api/trips/${tripId}/costs/`, cost, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    })
                 } else if (cost.id) {
-                    axios.put(`${baseUrl}/api/costs/${cost.id}/`, cost, {
-                        headers: { Authorization: `Bearer ${token}` }})
+                    return axios.put(`${baseUrl}/api/costs/${cost.id}/`, cost, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    })
                 }
             }))
-        } catch (err) {
-            console.log(err.response.data)
-        }
-        try {
+
             await Promise.all(hotels.map(hotel => {
                 if (!hotel.id) {
-                    axios.post(`${baseUrl}/api/trips/${tripId}/hotels/`, hotel, { headers: { Authorization: `Bearer ${token}` }})
+                    return axios.post(`${baseUrl}/api/trips/${tripId}/hotels/`, hotel, { headers: { Authorization: `Bearer ${token}` } })
                 } else if (hotel.id) {
-                    axios.put(`${baseUrl}/api/hotels/${hotel.id}/`, hotel, { headers: { Authorization: `Bearer ${token}` }})
+                    return axios.put(`${baseUrl}/api/hotels/${hotel.id}/`, hotel, { headers: { Authorization: `Bearer ${token}` } })
                 }
             }))
-        } catch (err) {
-            console.log(err.response.data)
-        }
-    }
 
-    async function deleteTrip() {
-        try {
-            await axios.delete(`${baseUrl}/api/trips/${tripId}/`, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            navigate('/my-trips')
-        } catch (err) {
-            console.log(err)
-        }
-    }
+            setIsEditing(false)
+            setError({})
 
-    function handleDeleteButton() {
-        const isConfirmed = confirm("Are you sure you want to delete this trip?")
-        if (isConfirmed) {
-            deleteTrip()
+        } catch (err) {
+            setError(err.response.data)
         }
     }
 
@@ -241,6 +225,7 @@ export default function ShowTrip() {
     function handleCloseInvite() {
         setIsInviting(false)
         setEmail('')
+        setError({})
     }
 
     async function sendInvite() {
@@ -248,48 +233,63 @@ export default function ShowTrip() {
             await axios.post(`${baseUrl}/api/trips/${tripId}/add-user/`, { email: email }, {
                 headers: { Authorization: `Bearer ${token}` }
             })
+            setIsInviting(false)
+            setEmail('')
+            fetchTrip()
+            setError({})
         } catch (err) {
-            console.log(err.response.data)
+            setError(err.response.data)
         }
-        setIsInviting(false)
-        setEmail('')
-        fetchTrip()
     }
 
-    function handleLeaveButton() {
+    async function deleteTrip() {
+        try {
+            await axios.delete(`${baseUrl}/api/trips/${tripId}/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            navigate('/my-trips')
+        } catch (err) {
+            setError(err.response.data)
+        }
+    }
 
+    function handleLeaveTrip() {
         async function removeUser() {
             const userId = getPayload().sub
             try {
-                await axios.post(`${baseUrl}/api/trips/${tripId}/remove-user/`, { userId: userId }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                })
+                await axios.post(`${baseUrl}/api/trips/${tripId}/remove-user/`, { userId: userId }, { headers: { Authorization: `Bearer ${token}` } })
                 navigate('/my-trips')
             } catch (err) {
-                console.log(err)
+                setError(err.response.data)
             }
         }
-
-        const isConfirmed = confirm(trip.owners.length > 1 ? "Are you sure you want to leave this trip?" : "Are you sure you want to leave this trip? If you leave this trip, it will be deleted!")
-
-        if (isConfirmed && trip.owners.length > 1) {
+        if (trip.owners.length > 1) {
             removeUser()
-        } else if (isConfirmed) {
+        } else {
             removeUser()
             deleteTrip()
         }
     }
 
+    function handleCancel() {
+        setIsLeaveModalOpen(false)
+        setIsDeleteModalOpen(false)
+    }
+
     if (!trip.country) {
         return <section className="section">
-            <p className="has-text-weight-bold">Loading...</p>
+            <p className="has-text-weight-bold">{error.detail ? `${error.detail}` : "Loading..."}</p>
         </section>
     }
 
     return <section className="section">
         <div className="container">
-
-            <div className="block hero has-text-centered is-info is-small">
+            <div className="has-text-danger mb-3">
+                {!isInviting && Object.entries(error).map(([key, value]) => {
+                    return <p key={key}>{key} - {value}</p>
+                })}
+            </div>
+            <div className="block hero has-text-centered is-small">
                 <div className="hero-body">
                     {!isEditing && <>
                         <h1 className="title is-2">{trip.name}</h1>
@@ -302,17 +302,18 @@ export default function ShowTrip() {
                             name={"name"}
                             onChange={handleTripInput}
                             value={trip.name}
+                            placeholder="Name of trip"
                         />
                         <h1 className="title is-4">From
                             <input
-                                className="input date"
+                                className="input date mx-2"
                                 type="date"
                                 name={"start_date"}
                                 onChange={handleTripInput}
                                 value={trip.start_date}
                             /> to
                             <input
-                                className="input date"
+                                className="input date mx-2"
                                 type="date"
                                 name={"end_date"}
                                 onChange={handleTripInput}
@@ -323,29 +324,41 @@ export default function ShowTrip() {
             </div>
 
             <div className="buttons is-flex is-justify-content-space-between">
-                {!isEditing ? <button className="button is-warning" onClick={handleEditButton}>Edit Trip Details</button> :
-                    <button className="button is-warning" onClick={saveData}>Save Changes</button>}
-                <button className="button is-link" onClick={handleInviteButton}>Invite to Trip</button>
+                {!isEditing ? <button className="button is-dark" onClick={handleEditButton}>Edit Trip Details</button> :
+                    <button className="button is-dark" onClick={saveData}>Save Changes</button>}
+                <button className="button is-dark" onClick={handleInviteButton}>Invite to Trip</button>
 
                 <div className={!isInviting ? "modal" : "modal is-active"}>
                     <div className="modal-background"></div>
-                    <div className="modal-content">
-                        <label className="label has-text-link">Who would you like to invite to this trip?</label>
-                        <input className="input" type="email" name="email" placeholder="Enter email address" value={email} onChange={(e) => setEmail(e.target.value)} />
-                        <button className="button is-link" onClick={sendInvite}>Send</button>
+                    <div className="modal-card">
+                        <header className="modal-card-head">
+                            <p className="modal-card-title">Who would you like to invite to this trip?</p>
+                            <button className="delete" aria-label="close" onClick={handleCloseInvite}></button>
+                        </header>
+                        <section className="modal-card-body">
+                            <p className="has-text-danger">{error.detail}</p>
+                            <input 
+                            className="input is-primary" 
+                            type="email" 
+                            name="email" 
+                            placeholder="Enter email address" 
+                            value={email} 
+                            onChange={(e) => setEmail(e.target.value)} 
+                            />
+                            <button className="button is-primary mt-3" onClick={sendInvite}>Send</button>
+                        </section>
                     </div>
-                    <button className="modal-close is-large" onClick={handleCloseInvite}></button>
                 </div>
             </div>
 
             <div className="columns is-multiline">
                 <div className="column">
                     <div className="block">
-                        <div className="card">
+                        <div className="card has-background-info-light">
                             <div className="card-content">
                                 <h3 className="title is-4">Flights</h3>
-                                {!isEditing && <Link to={`/my-trips/${trip.id}/flights`}>Search for flights</Link>}   
-                                <p>Outbound: {!isEditing ? 
+                                {!isEditing && <Link to={`/my-trips/${trip.id}/flights`}>Search for flights</Link>}
+                                <p>Outbound: {!isEditing ?
                                     <span> {trip.flight_out_number} {trip.flight_out_time && formatDateTime(trip.flight_out_time)}</span>
                                     : <>
                                         <input
@@ -390,46 +403,46 @@ export default function ShowTrip() {
                     </div>
 
                     <div className="block">
-                        <div className="card">
+                        <div className="card has-background-warning-light">
                             <div className="card-content">
                                 <h3 className="title is-4">Accommodation</h3>
                                 {!isEditing ? <div>
-                                <Link to={`/my-trips/${trip.id}/hotels`} state={{ country: trip.country }}>Search for hotels</Link>                               
-                                {hotels.map((hotel, index) => {
-                                    return <p key={index}>{hotel.link ? <Link to={hotel.link} target="_blank" key={index}>{hotel.name}</Link> : hotel.name}</p>
-                                })}
+                                    <Link to={`/my-trips/${trip.id}/hotels`} state={{ country: trip.country }}>Search for hotels</Link>
+                                    {hotels.map((hotel, index) => {
+                                        return <p key={index}>{hotel.name} {hotel.link && <span>- <Link to={hotel.link} target="_blank" key={index}>link</Link></span>}</p>
+                                    })}
                                 </div>
-                                : <>                                        
-                                {hotels.map((hotel, index) => {
-                                    return <div key={index}>
-                                        <input
-                                            className="input"
-                                            type="text"
-                                            name={"name"}
-                                            value={hotel.name}
-                                            onChange={(e) => handleHotelInput(e, index)}
-                                            placeholder="hotel name"
-                                        />
-                                        <input
-                                            className="input"
-                                            type="text"
-                                            name={"link"}
-                                            value={hotel.link}
-                                            onChange={(e) => handleHotelInput(e, index)}
-                                            placeholder="hotel link"
-                                        />
-                                        <button className="button is-danger" onClick={() => handleHotelRemove(hotel.id)}>Remove</button>
-                                    </div>
-                                })}
-                                    <button className="button is-light" name="costs" onClick={handleHotelAdd} >Add</button>
-                                </>
+                                    : <>
+                                        {hotels.map((hotel, index) => {
+                                            return <div key={index}>
+                                                <input
+                                                    className="input"
+                                                    type="text"
+                                                    name={"name"}
+                                                    value={hotel.name}
+                                                    onChange={(e) => handleHotelInput(e, index)}
+                                                    placeholder="Hotel name"
+                                                />
+                                                <input
+                                                    className="input"
+                                                    type="text"
+                                                    name={"link"}
+                                                    value={hotel.link}
+                                                    onChange={(e) => handleHotelInput(e, index)}
+                                                    placeholder="Hotel link (optional)"
+                                                />
+                                                <button className="button is-danger is-light" onClick={() => handleHotelRemove(hotel.id)}>Remove</button>
+                                            </div>
+                                        })}
+                                        <button className="button is-light" name="costs" onClick={handleHotelAdd} >Add</button>
+                                    </>
                                 }
                             </div>
                         </div>
                     </div>
 
                     <div className="block">
-                        <div className="card">
+                        <div className="card has-background-success-light">
                             <div className="card-content">
                                 <h3 className="title is-4">Activities</h3>
                                 {!isEditing && trip.activities ? trip.activities.map((activity, index) => {
@@ -443,8 +456,9 @@ export default function ShowTrip() {
                                                 name={"activities"}
                                                 value={activity}
                                                 onChange={(e) => handleTripArrayInput(e, index)}
+                                                placeholder="Activity details"
                                             />
-                                            <button className="button is-danger" name="activities" onClick={(e) => handleTripRemove(e, index)}>Remove</button>
+                                            <button className="button is-danger is-light" name="activities" onClick={(e) => handleTripRemove(e, index)}>Remove</button>
                                         </div>
                                     })}
                                     <button className="button is-light" name="activities" onClick={handleTripAdd}>Add</button>
@@ -457,7 +471,7 @@ export default function ShowTrip() {
 
                 <div className="column">
                     <div className="block">
-                        <div className="card">
+                        <div className="card has-background-danger-light">
                             <div className="card-content">
                                 <h3 className="title is-4">Itinerary</h3>
                                 {!isEditing ? <p className="itinerary">{trip.itinerary}</p>
@@ -475,7 +489,7 @@ export default function ShowTrip() {
 
                 <div className="column">
                     <div className="block">
-                        <div className="card">
+                        <div className="card has-background-primary-light">
                             <div className="card-content">
                                 <h3 className="title is-4">Budget</h3>
                                 {!isEditing ? <>
@@ -493,7 +507,7 @@ export default function ShowTrip() {
                                                     name={"category"}
                                                     value={cost.category}
                                                     onChange={(e) => handleCostInput(e, index)}
-                                                    placeholder="category"
+                                                    placeholder="Category"
                                                 />
                                                 <input
                                                     className="input"
@@ -502,7 +516,7 @@ export default function ShowTrip() {
                                                     value={cost.amount}
                                                     onChange={(e) => handleCostInput(e, index)}
                                                 />
-                                                <button className="button is-danger" onClick={() => handleCostRemove(cost.id)}>Remove</button>
+                                                <button className="button is-danger is-danger is-light" onClick={() => handleCostRemove(cost.id)}>Remove</button>
                                             </div>
                                         })}
                                         <button className="button is-light" name="costs" onClick={handleCostAdd}>Add</button>
@@ -513,7 +527,7 @@ export default function ShowTrip() {
                     </div>
 
                     <div className="block">
-                        <div className="card">
+                        <div className="card has-background-text-light">
                             <div className="card-content">
                                 <h3 className="title is-4">Useful info about {trip.country}</h3>
                                 <p>Language(s): {country.area &&
@@ -532,7 +546,7 @@ export default function ShowTrip() {
                     </div>
 
                     <div className="block">
-                        <div className="card">
+                        <div className="card has-background-link-light">
                             <div className="card-content">
                                 <h3 className="title is-4">Travellers</h3>
                                 {trip.owners.map((owner, index) => {
@@ -544,8 +558,20 @@ export default function ShowTrip() {
                 </div>
             </div>
             <div className="buttons is-centered">
-                <button className="button is-danger" onClick={handleLeaveButton}>Leave Trip</button>
-                <button className="button is-danger" onClick={handleDeleteButton}>Delete Trip</button>
+                <button className="button is-dark" onClick={() => {setIsLeaveModalOpen(true)}}>Leave Trip</button>
+                <Modal 
+                    isOpen={isLeaveModalOpen}
+                    onRequestClose={handleCancel}
+                    onConfirm={handleLeaveTrip}
+                    message={trip.owners.length > 1 ? "Are you sure you want to leave this trip?" : "Are you sure you want to leave this trip? If you leave this trip, it will be deleted!"}
+                />
+                <button className="button is-dark" onClick={() => {setIsDeleteModalOpen(true)}}>Delete Trip</button>
+                <Modal 
+                    isOpen={isDeleteModalOpen}
+                    onRequestClose={handleCancel}
+                    onConfirm={deleteTrip}
+                    message={"Are you sure you want to delete this trip?"}
+                />
             </div>
         </div>
 
