@@ -23,67 +23,67 @@ export default function ShowTrip() {
     const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
-    // const fetchCountry = useCallback(async (country) => {
-    //     try {
-    //         const resp = await axios.get(`${baseUrl}/third-party-api/countries/${country}`)
-    //         country = resp.data[0]
-    //         setCountry(resp.data[0])
-    //         const currency = Object.keys(country.currencies).map((key) => {
-    //             return key
-    //         })
-    //         fetchExchangeRate(currency[0])
-    //     } catch (err) {
-    //         setError(err.response.data)
-    //     }
-    // }, [])
+    const fetchCountry = useCallback(async (country) => {
+        try {
+            const resp = await axios.get(`${baseUrl}/third-party-api/countries/${country}`)
+            country = resp.data[0]
+            setCountry(resp.data[0])
+            const currency = Object.keys(country.currencies).map((key) => {
+                return key
+            })
+            fetchExchangeRate(currency[0])
+        } catch (err) {
+            setError(err.response.data)
+        }
+    }, [])
 
-    // async function fetchExchangeRate(currency) {
-    //     try {
-    //         const resp = await axios.get(`${baseUrl}/third-party-api/exchange-rates/`)
-    //         setExchangeRate(resp.data.conversion_rates[currency])
-    //     } catch (err) {
-    //         setError(err.response.data)
-    //     }
-    // }
+    async function fetchExchangeRate(currency) {
+        try {
+            const resp = await axios.get(`${baseUrl}/third-party-api/exchange-rates/`)
+            setExchangeRate(resp.data.conversion_rates[currency])
+        } catch (err) {
+            setError(err.response.data)
+        }
+    }
 
-    async function fetchTrip() {
+    const fetchTrip = useCallback(async () => {
         try {
             const resp = await axios.get(`${baseUrl}/api/trips/${tripId}/`, { headers: { Authorization: `Bearer ${token}` } })
             setTrip(resp.data)
             const data = resp.data
             if (data.name) {
                 fixDateTime(data)
-                // const country = resp.data.country
-                // fetchCountry(country)
+                const country = resp.data.country
+                fetchCountry(country)
             }
         } catch (err) {
             setError(err.response.data)
         }
-    }
+    }, [fetchCountry, token, tripId])
 
-    async function fetchCosts() {
+    const fetchCosts = useCallback(async () => {
         try {
             const resp = await axios.get(`${baseUrl}/api/trips/${tripId}/costs/`, { headers: { Authorization: `Bearer ${token}` } })
             setCosts(resp.data)
         } catch (err) {
             setError(err.response.data)
         }
-    }
+    }, [token, tripId])
 
-    async function fetchHotels() {
+    const fetchHotels = useCallback(async () => {
         try {
             const resp = await axios.get(`${baseUrl}/api/trips/${tripId}/hotels/`, { headers: { Authorization: `Bearer ${token}` } })
             setHotels(resp.data)
         } catch (err) {
             setError(err.response.data)
         }
-    }
+    }, [token, tripId])
 
     useEffect(() => {
         fetchTrip()
         fetchCosts()
         fetchHotels()
-    }, [tripId])
+    }, [fetchTrip, fetchCosts, fetchHotels])
 
     function fixDateTime(data) {
         const newTripData = structuredClone(data)

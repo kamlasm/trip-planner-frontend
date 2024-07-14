@@ -6,10 +6,8 @@ import { baseUrl } from '../config'
 
 export default function SearchFlights() {
     const { tripId } = useParams()
-    const [flights, setFlights] = useState([
-        {'type': 'flight-offer', 'id': '80', 'source': 'GDS', 'instantTicketingRequired': false, 'nonHomogeneous': false, 'oneWay': false, 'isUpsellOffer': false, 'lastTicketingDate': '2024-07-15', 'lastTicketingDateTime': '2024-07-15', 'numberOfBookableSeats': 9, 'itineraries': [{'duration': 'PT1H', 'segments': [{'departure': {'iataCode': 'LHR', 'at': '2024-07-15T07:00:00'}, 'arrival': {'iataCode': 'CDG', 'at': '2024-07-15T09:00:00'}, 'carrierCode': '6X', 'number': '7919', 'aircraft': {'code': '744'}, 'operating': {'carrierCode': '6X'}, 'duration': 'PT1H', 'id': '1', 'numberOfStops': 0, 'blacklistedInEU': false}]}, {'duration': 'PT1H', 'segments': [{'departure': {'iataCode': 'CDG', 'at': '2024-07-20T11:30:00'}, 'arrival': {'iataCode': 'LHR', 'at': '2024-07-20T11:30:00'}, 'carrierCode': '6X', 'number': '7726', 'aircraft': {'code': 'ERJ'}, 'operating': {'carrierCode': '6X'}, 'duration': 'PT1H', 'id': '59', 'numberOfStops': 0, 'blacklistedInEU': false}]}], 'price': {'currency': 'EUR', 'total': '920.02', 'base': '568.00', 'fees': [{'amount': '0.00', 'type': 'SUPPLIER'}, {'amount': '0.00', 'type': 'TICKETING'}], 'grandTotal': '920.02'}, 'pricingOptions': {'fareType': ['PUBLISHED'], 'includedCheckedBagsOnly': true}, 'validatingAirlineCodes': ['6X'], 'travelerPricings': [{'travelerId': '1', 'fareOption': 'STANDARD', 'travelerType': 'ADULT', 'price': {'currency': 'EUR', 'total': '460.01', 'base': '284.00'}, 'fareDetailsBySegment': [{'segmentId': '1', 'cabin': 'ECONOMY', 'fareBasis': 'YCOMPARE', 'brandedFare': 'ECPLTE', 'brandedFareLabel': 'ECOPLUSTEA', 'class': 'Y', 'includedCheckedBags': {'quantity': 3}, 'amenities': [{'description': 'VEGETARIAN MEAL', 'isChargeable': true, 'amenityType': 'MEAL', 'amenityProvider': {'name': 'BrandedFare'}}]}, {'segmentId': '59', 'cabin': 'ECONOMY', 'fareBasis': 'YCOMPARE', 'brandedFare': 'ECPLTE', 'brandedFareLabel': 'ECOPLUSTEA', 'class': 'Y', 'includedCheckedBags': {'quantity': 3}, 'amenities': [{'description': 'VEGETARIAN MEAL', 'isChargeable': true, 'amenityType': 'MEAL', 'amenityProvider': {'name': 'BrandedFare'}}]}]}, {'travelerId': '2', 'fareOption': 'STANDARD', 'travelerType': 'ADULT', 'price': {'currency': 'EUR', 'total': '460.01', 'base': '284.00'}, 'fareDetailsBySegment': [{'segmentId': '1', 'cabin': 'ECONOMY', 'fareBasis': 'YCOMPARE', 'brandedFare': 'ECPLTE', 'brandedFareLabel': 'ECOPLUSTEA', 'class': 'Y', 'includedCheckedBags': {'quantity': 3}, 'amenities': [{'description': 'VEGETARIAN MEAL', 'isChargeable': true, 'amenityType': 'MEAL', 'amenityProvider': {'name': 'BrandedFare'}}]}, {'segmentId': '59', 'cabin': 'ECONOMY', 'fareBasis': 'YCOMPARE', 'brandedFare': 'ECPLTE', 'brandedFareLabel': 'ECOPLUSTEA', 'class': 'Y', 'includedCheckedBags': {'quantity': 3}, 'amenities': [{'description': 'VEGETARIAN MEAL', 'isChargeable': true, 'amenityType': 'MEAL', 'amenityProvider': {'name': 'BrandedFare'}}]}]}]}
-    ])
-    const [airlines, setAirlines] = useState({'KL': 'KLM ROYAL DUTCH AIRLINES', 'TU': 'TUNISAIR', '6X': 'AMADEUS SIX', 'KM': 'KM MALTA AIRLINES', 'VY': 'VUELING AIRLINES', 'UX': 'AIR EUROPA', 'OS': 'AUSTRIAN AIRLINES', 'AF': 'AIR FRANCE', 'AZ': 'ITA AIRWAYS'})
+    const [flights, setFlights] = useState([])
+    const [airlines, setAirlines] = useState({})
     const [params, setParams] = useState({
         originCity: '',
         destinationCity: '',
@@ -17,9 +15,7 @@ export default function SearchFlights() {
         returnDate: '',
         adults: 0
     })
-    // console.log(params)
-    console.log(flights)
-    console.log(airlines)
+    const [error, setError] = useState([])
 
     function handleChange(e) {
         const newParams = structuredClone(params)
@@ -31,8 +27,13 @@ export default function SearchFlights() {
         e.preventDefault()
         try {
             const resp = await axios.post(`${baseUrl}/third-party-api/flights/`, params)
-            setFlights(resp.data.data)
-            setAirlines(resp.data.dictionaries.carriers)
+            if (resp.data['errors']) {
+                setError(resp.data['errors'])
+            } else {
+                setFlights(resp.data.data)
+                setAirlines(resp.data.dictionaries.carriers)
+                setError([])    
+            }
         } catch (err) {
             console.log(err)
         }
@@ -46,6 +47,12 @@ export default function SearchFlights() {
 
         <div className="container">
             <h1 className="title">Search Flights</h1>
+            <div className="has-text-danger mb-3">
+                {error.map((error, index) => {
+                return <p key={index}>{error.detail ? error.detail : error.title}</p>
+            })}
+            </div>
+
             <form onSubmit={handleSubmit} className="box">
 
                 <div className="field">
@@ -56,6 +63,7 @@ export default function SearchFlights() {
                         name={"originCity"}
                         onChange={handleChange}
                         value={params.originCity}
+                        required
                     />
                 </div>
 
@@ -67,6 +75,7 @@ export default function SearchFlights() {
                         name={"destinationCity"}
                         onChange={handleChange}
                         value={params.destinationCity}
+                        required
                     />
                 </div>
 
@@ -78,6 +87,7 @@ export default function SearchFlights() {
                         name={"departureDate"}
                         onChange={handleChange}
                         value={params.departureDate}
+                        required
                     />
                 </div>
                         
@@ -100,6 +110,7 @@ export default function SearchFlights() {
                         name={"adults"}
                         onChange={handleChange}
                         value={params.adults}
+                        required
                     />
                 </div>
 
@@ -111,21 +122,26 @@ export default function SearchFlights() {
         <div className="container">
             <div className="columns is-multiline mt-1">
                 {flights.map((flight, index) => {
-                    return <div key={index} className="column is-one-third-desktop is-half-tablet is-full-mobile">
-                        <div className="card">
+                    return <div key={index} className="column is-half-desktop is-full-tablet is-full-mobile">
+                        <div className="card has-background-info-95">
                             <div className="card-content">
-                                <h5 className="has-text-weight-semibold">Outbound: </h5>
-                                <p>Depart {flight.itineraries[0].segments[0].departure.iataCode} - {formatDateTime(flight.itineraries[0].segments[0].departure.at)} </p>
-                                <p>Arrive {flight.itineraries[0].segments[0].arrival.iataCode} - {formatDateTime(flight.itineraries[0].segments[0].arrival.at)} </p>
-                                {findAirline(flight.itineraries[0].segments[0].carrierCode)}
-
-                                <h5 className="has-text-weight-semibold">Return: </h5>
-                                <p>Depart {flight.itineraries[1].segments[0].departure.iataCode} - {formatDateTime(flight.itineraries[1].segments[0].departure.at)} </p>
-                                <p>Arrive {flight.itineraries[1].segments[0].arrival.iataCode} - {formatDateTime(flight.itineraries[1].segments[0].arrival.at)} </p>
-                                {findAirline(flight.itineraries[1].segments[0].carrierCode)}
-
-                                <h5 className="has-text-weight-semibold">Price: {flight.price.total} {flight.price.currency}</h5>
-
+                                <h5 className="has-text-weight-semibold">Outbound </h5>                                
+                                <p className="has-text-info-40">    
+                                    <span className="has-text-weight-semibold">{flight.itineraries[0].segments[0].departure.iataCode} </span> 
+                                    {formatDateTime(flight.itineraries[0].segments[0].departure.at)} --{">"} 
+                                    <span className="has-text-weight-semibold"> {flight.itineraries[0].segments[0].arrival.iataCode} </span> 
+                                    {formatDateTime(flight.itineraries[0].segments[0].arrival.at)} 
+                                </p>
+                                <p className="has-text-info-40 has-text-weight-semibold">{findAirline(flight.itineraries[0].segments[0].carrierCode)} </p>
+                                <h5 className="has-text-weight-semibold">Return </h5>
+                                <p className="has-text-info-40">
+                                    <span className="has-text-weight-semibold">{flight.itineraries[1].segments[0].departure.iataCode} </span> 
+                                    {formatDateTime(flight.itineraries[1].segments[0].departure.at)} --{">"} 
+                                    <span className="has-text-weight-semibold"> {flight.itineraries[1].segments[0].arrival.iataCode} </span> 
+                                    {formatDateTime(flight.itineraries[1].segments[0].arrival.at)} 
+                                </p>
+                                <p className="has-text-info-40 has-text-weight-semibold">{findAirline(flight.itineraries[1].segments[0].carrierCode)} </p>
+                                <h5 className="has-text-weight-semibold">{flight.price.total} {flight.price.currency}</h5>
                             </div>
                         </div>
                     </div>

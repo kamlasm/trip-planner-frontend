@@ -7,28 +7,13 @@ export default function SearchHotels() {
     const { tripId } = useParams()
     const location = useLocation()
     const { country } = location.state
-    const [hotels, setHotels] = useState([
-        {name: {content: "Hotel Name"}, 
-        images: "https://img-cdn.pixlr.com/image-generator/history/65bb506dcb310754719cf81f/ede935de-1138-4f66-8ed7-44bd16efc709/medium.webp",
-        city: {content: "City"},
-        postalCode: "postal code",
-        web: "www.somelink.com",
-        description: {content: "some desc about the hotel"}},
-        {name: {content: "Hotel Name that is longer than Hotel 1 name"}, 
-        images: '',
-        city: {content: "City"},
-        postalCode: "postal code",
-        web: "https://www.somelink.com",
-        description: {content: "some desc about the hotel"}}
-    ])
+    const [hotels, setHotels] = useState([])
     const [params, setParams] = useState({
         city: '',
         country: country,
     })
     const [showDesc, setShowDesc] = useState(false)
     const [error, setError] = useState({})
-
-    console.log(hotels)
 
     function handleChange(e) {
         const newParams = structuredClone(params)
@@ -83,6 +68,7 @@ export default function SearchHotels() {
                         name={"city"}
                         onChange={handleChange}
                         value={params.city}
+                        required
                     />
                 </div>
 
