@@ -23,6 +23,13 @@ div.hotel {
   width: unset;
 }
 
+.my-trip {
+  min-height: 131px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 @media screen and (min-width: 660px) {
   .navbar, .navbar-end, .navbar-menu, .navbar-brand {
       align-items: stretch;
@@ -57,5 +64,23 @@ div.hotel {
   .navbar-item > div.buttons {
     flex-direction: column;
     
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .my-trip {
+    min-height: 131px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .my-trip {
+    min-height: 158px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 }

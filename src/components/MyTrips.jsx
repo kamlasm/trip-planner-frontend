@@ -55,12 +55,12 @@ export default function MyTrips() {
       <div className="container">
         <div className="columns is-multiline is-mobile">
           {trips.map((trip, index) => {
-            return <div key={trip.id} className="column is-one-third-desktop is-half-tablet is-half-mobile">
+            return <div key={trip.id} className="column is-one-third-desktop is-half-tablet is-full-mobile">
               <Link to={`/my-trips/${trip.id}`}>
-                <div className={index % 2 === 0 ? "card has-background-info " : "card has-background-info-light"}>
-                  <div className="card-content ">
+                <div className={index % 2 === 0 ? "card has-background-info" : "card has-background-info-light"}>
+                  <div className="card-content my-trip">
                     <h3 className="title is-4 has-text-info-bold">{trip.name}</h3>
-                    <p className="subtitle is-5 mt-1 has-text-info-bold">{formatDateTime(trip.start_date)} - {formatDateTime(trip.end_date)}</p>
+                    <p className="subtitle is-5 mt-1 has-text-info-bold">{formatDateTime(trip.start_date)} to {formatDateTime(trip.end_date)}</p>
                   </div>
                 </div>
               </Link>
